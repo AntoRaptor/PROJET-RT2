@@ -1,6 +1,7 @@
-Current configuration : 1140 bytes
+Current configuration : 2959 bytes
 !
 version 12.4
+no service pad
 service timestamps debug datetime msec
 service timestamps log datetime msec
 no service password-encryption
@@ -10,7 +11,6 @@ hostname Router
 boot-start-marker
 boot-end-marker
 !
-! card type command needed for slot/vwic-slot 0/1
 !
 no aaa new-model
 memory-size iomem 5
@@ -37,7 +37,35 @@ voice-card 0
 !
 !
 !
+crypto pki trustpoint TP-self-signed-771808577
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-771808577
+ revocation-check none
+ rsakeypair TP-self-signed-771808577
 !
+!
+crypto pki certificate chain TP-self-signed-771808577
+ certificate self-signed 01
+  3082023A 308201A3 A0030201 02020101 300D0609 2A864886 F70D0101 04050030
+  30312E30 2C060355 04031325 494F532D 53656C66 2D536967 6E65642D 43657274
+  69666963 6174652D 37373138 30383537 37301E17 0D303530 37313432 31303830
+  325A170D 32303031 30313030 30303030 5A303031 2E302C06 03550403 1325494F
+  532D5365 6C662D53 69676E65 642D4365 72746966 69636174 652D3737 31383038
+  35373730 819F300D 06092A86 4886F70D 01010105 0003818D 00308189 02818100
+  B8D3A090 0D59E354 391A06E7 1B6C1468 09351CEB 6328C401 C5540505 983CF331
+  F5EB38DF 681120A6 AB914B9D 1A395513 E48487D8 7C0B3213 7991E396 AF18AC49
+  4175A4AC 515FD4FB 60F3AA5E 440A62C7 2E527DDA 36684B87 02D44199 51ADAFEC
+  95D05039 523A1CD7 FC8B2B90 18AEF2D3 CE4FE17B 3B4DEDFB D123B4A9 35F941A1
+  02030100 01A36430 62300F06 03551D13 0101FF04 05300301 01FF300F 0603551D
+  11040830 06820441 6E746F30 1F060355 1D230418 30168014 5C4FFBCB 7C184F18
+  1BE05A3B 059EF59F ED09CBA1 301D0603 551D0E04 1604145C 4FFBCB7C 184F181B
+  E05A3B05 9EF59FED 09CBA130 0D06092A 864886F7 0D010104 05000381 81004AB1
+  3729CF06 08735415 7CC0A64E 4DF78932 9C5EC59C 09D980CE 448899FA C9DE0768
+  EB3E92AE 731911BA 167B29DD B90B025D 87C214AD AC6B8B7B 27453B2D 9DDEBB34
+  4B91DFFA 1D6671A7 4C94FA09 6F6B4082 F43A5CC6 E8B1725E 767146F3 E8D9AE8A
+  4258EFCE 1DDC7A90 9ABBC453 D7808D46 1539F156 25D73410 79E0829B 7662
+  quit
+no spanning-tree optimize bpdu transmission
 !
 !
 !
@@ -65,8 +93,19 @@ interface FastEthernet0/1.10
 !
 interface FastEthernet0/1.20
  encapsulation dot1Q 20
+ ip address 10.0.20.254 255.255.255.0
  ip nat inside
  ip virtual-reassembly
+!
+interface Serial0/1/0
+ no ip address
+ shutdown
+ no fair-queue
+ clock rate 125000
+!
+interface Serial0/1/1
+ no ip address
+ shutdown
 !
 ip forward-protocol nd
 !
@@ -77,7 +116,6 @@ ip nat source list 1 interface FastEthernet0/0 overload
 ip nat inside source list 1 interface FastEthernet0/0 overload
 !
 access-list 1 permit any
-!
 !
 !
 !
@@ -94,6 +132,8 @@ control-plane
 line con 0
 line aux 0
 line vty 0 4
+ login
+line vty 5 15
  login
 !
 scheduler allocate 20000 1000
